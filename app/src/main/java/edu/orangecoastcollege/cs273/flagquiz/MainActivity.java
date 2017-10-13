@@ -7,6 +7,7 @@ import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Keys used in preferences.xml
     private static final String CHOICES = "pref_numberOfChoices";
-    private static final String REGIONS =" pref_regions";
+    private static final String REGIONS = "pref_regions";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +62,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Let's register the OnSharedPreferencesChangeListener
-        SharedPreferences preferences = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
-        preferences.registerOnSharedPreferenceChangeListener(mPreferenceChangeListener);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(mListener);
 
 
         mQuizCountriesList = new ArrayList<>(FLAGS_IN_QUIZ);
@@ -279,36 +281,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    SharedPreferences.OnSharedPreferenceChangeListener mPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-            // Let's figure out what key changed
-            switch (key)
-            {
-                case CHOICES:
-                    // Read the number of choices from shared preferences
-                    //String numberString = sharedPreferences.getString(CHOICES, "4");
-                    //mChoices = Integer.parseInt(numberString);
-                    mChoices = Integer.parseInt(sharedPreferences.getString(CHOICES, "4"));
-
-                    // Call method to update choices (visually)
-                    updateChoices();
-                    resetQuiz();
-                    break;
-
-                case REGIONS:
-                    mRegion = sharedPreferences.getString(REGIONS, "All");
-                    updateRegion();
-                    resetQuiz();
-                    break;
-            }
-
-            // Notify the user that the quiz will restart
-            Toast.makeText(MainActivity.this, R.string.restarting_quiz, Toast.LENGTH_SHORT).show();
-
-        }
-    };
 
     private void updateChoices() {
         // Enable/Show all the linear layouts < mChoices / 2
@@ -326,9 +299,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    SharedPreferences.OnSharedPreferenceChangeListener mListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+// Let's figure out what key changed
+            switch (key)
+            {
+                case CHOICES:
+                    // Read the number of choices from shared preferences
+                    //String numberString = sharedPreferences.getString(CHOICES, "4");
+                    //mChoices = Integer.parseInt(numberString);
+                    mChoices = Integer.parseInt(sharedPreferences.getString(CHOICES, "4"));
+                    Log.e(TAG, "Selected choice = " + mChoices);
+                    // Call method to update choices (visually)
+                    updateChoices();
+                    resetQuiz();
+                    break;
+
+                case REGIONS:
+                    mRegion = sharedPreferences.getString(REGIONS, "All");
+                    Log.e(TAG, "Selected region = " + mRegion);
+                    updateRegion();
+                    resetQuiz();
+                    break;
+            }
+
+            // Notify the user that the quiz will restart
+            Toast.makeText(MainActivity.this, R.string.restarting_quiz, Toast.LENGTH_SHORT).show();
+        }
+    };
+
     private void updateRegion() {
         // Make a decision:
         // If the region is "All", filtered list is the same as all
+
         if (mRegion.equals("All"))
             mFilteredCountriesList = new ArrayList<>(mAllCountriesList);
         else
