@@ -18,4 +18,5 @@
         android:summary="@string/world_regions_description"
         android:persistent="true"
         android:defaultValue="All"/>
+
 </PreferenceScreen>
